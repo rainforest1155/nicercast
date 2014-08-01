@@ -2,7 +2,7 @@ var express = require('express');
 var http = require('http');
 var spawn = require("child_process").spawn;
 var icecast = require('icecast-stack');
-var lame = require('lame');
+var wav = require('wav');
 var Throttle = require('throttle');
 var ip = require('ip');
 
@@ -32,22 +32,22 @@ var Server = function(inStream, opts) {
     var addr = ip.address();
 
     res.status(200);
-    res.set('Content-Type', 'audio/x-mpegurl');
-    res.send('http://' + addr + ':' + this.serverPort + '/listen');
+    res.set('Content-Type', 'audio/wav');
+    res.send('http://' + addr + ':' + this.serverPort + '/listen.wav');
   }.bind(this);
 
   app.get('/', playlistEndpoint);
   app.get('/listen.m3u', playlistEndpoint);
 
 
-  app.get('/listen', function(req, res, next) {
+  app.get('/listen.wav', function(req, res, next) {
 
     var acceptsMetadata = req.headers['icy-metadata'] == 1;
     var parsed = require('url').parse(req.url, true);
 
     // generate response header
     var headers = {
-      "Content-Type": 'audio/mpeg',
+      "Content-Type": 'audio/wav',
       "Connection" : 'close'
     };
     
@@ -65,7 +65,7 @@ var Server = function(inStream, opts) {
     // setup encoder
 
     // create the Encoder instance
-    var encoder = new lame.Encoder({
+    var encoder = new wav.Writer({
       channels: 2,        // 2 channels (left and right)
       bitDepth: 16,       // 16-bit samples
       sampleRate: 44100   // 44,100 Hz sample rate
